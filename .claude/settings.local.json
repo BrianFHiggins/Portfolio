@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/brian.higgins/Desktop/**)",
+      "Bash(powershell -Command ' *)"
+    ]
+  }
+}

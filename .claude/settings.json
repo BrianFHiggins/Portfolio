@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "additionalDirectories": [
+      "c:\\Users\\brian.higgins\\Desktop"
+    ],
+    "allow": [
+      "PowerShell(Rename-Item -Path \"C:\\\\Users\\\\brian.higgins\\\\Desktop\\\\mcp-test\" -NewName \"brianhigginsportfolio\")"
+    ]
+  }
+}
