@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>The Vendor Management Workcenter — Brian Higgins</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Syne:wght@400;500;700;800&family=Geist+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0e0e0e;--bg2:#141414;--surface:#1e1e1e;--surface2:#242424;
+  --text:#f0f0f0;--text-dim:#666666;--text-mid:#aaaaaa;
+  --accent:#8b5cf6;--accent2:#ec4899;
+  --border:rgba(255,255,255,.07);--border-hi:rgba(255,255,255,.12);
+  --ff-serif:'DM Serif Display',serif;--ff-sans:'Syne',sans-serif;--ff-mono:'Geist Mono',monospace;
+  --side-w:200px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--ff-sans);background:var(--bg);color:var(--text);overflow-x:hidden;cursor:none}
+a{color:inherit;text-decoration:none}
+
+/* CURSOR */
+#cur{position:fixed;width:7px;height:7px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s}
+#cur-r{position:fixed;width:34px;height:34px;border:1px solid rgba(139,92,246,.35);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .25s,height .25s,border-color .2s}
+body.hov #cur{width:14px;height:14px}
+body.hov #cur-r{width:52px;height:52px;border-color:rgba(139,92,246,.6)}
+
+/* PROGRESS */
+#sprog{position:fixed;top:0;left:var(--side-w);right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));z-index:800;transform-origin:left;transform:scaleX(0)}
+
+/* SIDE NAV */
+#side-nav{position:fixed;top:0;left:0;width:var(--side-w);height:100vh;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:32px 0;z-index:500}
+.sn-name{font-family:var(--ff-sans);font-size:.75rem;font-weight:700;letter-spacing:.04em;color:var(--text);padding:0 24px;margin-bottom:32px;line-height:1.4}
+.sn-back{font-family:var(--ff-mono);font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);padding:8px 24px 20px;margin-bottom:20px;display:flex;align-items:center;gap:8px;transition:color .2s;border-bottom:1px solid var(--border)}
+.sn-back:hover{color:var(--accent)}
+.sn-back svg{width:10px;height:10px;flex-shrink:0}
+.sn-links{display:flex;flex-direction:column;gap:2px;padding:0 12px}
+.sn-a{font-family:var(--ff-mono);font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);padding:8px 12px;border-radius:3px;transition:color .2s,background .2s;position:relative}
+.sn-a:hover{color:var(--text);background:var(--surface)}
+.sn-a.active{color:var(--accent)}
+.sn-a.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:2px;height:14px;background:var(--accent);border-radius:1px}
+
+/* MAIN */
+#main{margin-left:var(--side-w)}
+
+/* HERO */
+#hero{display:flex;flex-direction:column}
+.hero-visual-band{height:520px;overflow:hidden;padding:0}
+.hero-text-band{padding:80px 80px 72px;background:var(--bg)}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;font-family:var(--ff-sans);font-size:.82rem;font-weight:400;color:var(--text-dim);margin-bottom:22px}
+.hero-h1{font-family:var(--ff-serif);font-size:clamp(2rem,3.5vw,3.2rem);line-height:1.1;letter-spacing:-.02em;margin-bottom:16px;font-weight:400}
+.hero-h1 .lo{color:var(--text-mid)}
+.hero-h1 strong{color:var(--text);font-style:italic}
+.hero-subtitle{font-family:var(--ff-sans);font-size:.95rem;color:var(--text-mid);margin-bottom:32px;line-height:1.5}
+.hero-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:40px}
+.hero-tag{font-family:var(--ff-mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:4px 12px}
+.meta-row{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--border);padding-top:28px}
+.mc{padding-left:18px;position:relative}
+.mc:first-child{padding-left:0}
+.mc:not(:first-child)::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:1px;height:50%;background:var(--border-hi)}
+.mc-label{font-family:var(--ff-mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px}
+.mc-val{font-family:var(--ff-sans);font-size:.88rem;color:var(--text-mid);line-height:1.6}
+
+/* SLOT (image placeholder) */
+.slot{background:var(--surface2);border:1.5px dashed var(--border-hi);border-radius:12px;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:24px 0;gap:10px;width:100%}
+.slot-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0;width:100%}
+.slot-row .slot{margin:0;min-height:180px}
+.slot-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin:24px 0;width:100%}
+.slot-row3 .slot{margin:0;min-height:180px}
+.slot-icon{width:34px;height:34px;border:1.5px solid var(--border-hi);border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--text-dim)}
+.slot-lbl{font-family:var(--ff-mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);text-align:center;max-width:240px;line-height:1.7}
+
+/* SECTION SHARED */
+.sec-wrap{padding:80px 80px;display:flex;flex-direction:column;align-items:center}
+.sec-inner{width:100%;max-width:1100px}
+.sec-h{font-family:var(--ff-serif);font-size:clamp(1.6rem,2.8vw,2.6rem);line-height:1.1;letter-spacing:-.02em;margin-bottom:28px;color:var(--text)}
+.sec-body{font-size:.95rem;line-height:1.82;color:var(--text-mid);margin-bottom:24px}
+.sec-body p{margin-bottom:20px}
+.sec-body p:last-child{margin-bottom:0}
+.sec-body strong{color:var(--text);font-weight:500;font-family:var(--ff-sans)}
+
+/* ROLE CARDS */
+.def-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px}
+.def-card-n{font-family:var(--ff-mono);font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+.def-card-h{font-family:var(--ff-sans);font-size:.88rem;font-weight:600;color:var(--text);margin-bottom:8px}
+.def-card-body{font-size:.82rem;line-height:1.7;color:var(--text-mid)}
+
+/* PRODUCT SUBSECTIONS */
+.dec-section{width:100%;max-width:1100px;margin-bottom:72px}
+.dec-section:last-child{margin-bottom:0}
+.dec-h{font-family:var(--ff-serif);font-size:clamp(1.3rem,2.2vw,1.9rem);line-height:1.1;letter-spacing:-.02em;margin-bottom:18px;color:var(--text)}
+.dec-body{font-size:.95rem;line-height:1.82;color:var(--text-mid);margin-bottom:24px}
+.dec-body p{margin-bottom:20px}
+.dec-body p:last-child{margin-bottom:0}
+.dec-body strong{color:var(--text);font-weight:500;font-family:var(--ff-sans)}
+
+/* PROJECT NAV */
+#proj-nav{padding:80px 80px;background:var(--bg2);border-top:1px solid var(--border)}
+.proj-nav-lbl{font-family:var(--ff-mono);font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--text-dim);margin-bottom:24px}
+.proj-nav-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;max-width:1100px}
+.proj-card{border:1px solid var(--border);border-radius:12px;padding:24px;transition:border-color .2s,background .2s;display:block}
+.proj-card:hover{border-color:var(--accent);background:var(--surface)}
+.proj-card.act{border-color:var(--accent);background:rgba(139,92,246,.04)}
+.proj-card-n{font-family:var(--ff-mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px}
+.proj-card-n.act{color:var(--accent)}
+.proj-card-h{font-family:var(--ff-serif);font-size:1.1rem;color:var(--text);margin-bottom:6px}
+.proj-card-sub{font-family:var(--ff-sans);font-size:.82rem;color:var(--text-mid)}
+
+/* FAB */
+#fab{position:fixed;bottom:28px;right:28px;z-index:600;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.fab-btn{width:40px;height:40px;border-radius:50%;border:1px solid var(--border-hi);background:var(--surface2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;color:var(--text-mid);font-size:.8rem}
+.fab-btn:hover{border-color:var(--accent);color:var(--accent);transform:scale(1.1)}
+
+/* REVEAL */
+[data-r]{opacity:0;transform:translateY(22px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1)}
+[data-r].in{opacity:1;transform:translateY(0)}
+[data-r][data-d="1"]{transition-delay:.1s}[data-r][data-d="2"]{transition-delay:.2s}
+[data-r][data-d="3"]{transition-delay:.3s}[data-r][data-d="4"]{transition-delay:.4s}
+
+/* LIGHT */
+body.light{--bg:#ffffff;--bg2:#f8f8f8;--surface:#f2f2f2;--surface2:#ebebeb;--text:#111111;--text-dim:#999999;--text-mid:#555555;--border:rgba(0,0,0,.07);--border-hi:rgba(0,0,0,.12)}
+
+/* MOBILE BAR */
+#mob-bar{display:none;position:fixed;top:0;left:0;right:0;height:52px;background:var(--bg2);border-bottom:1px solid var(--border);z-index:1100;align-items:center;justify-content:space-between;padding:0 16px}
+#mob-bar-btn{background:none;border:none;cursor:none;padding:8px;color:var(--text);display:flex;align-items:center;border-radius:6px;transition:color .2s}
+#mob-bar-btn:hover{color:var(--accent)}
+#mob-theme-bar{background:none;border:none;cursor:none;padding:8px;color:var(--text);display:flex;align-items:center;border-radius:6px;transition:color .2s}
+#mob-theme-bar:hover{color:var(--accent)}
+.mob-bar-title{font-family:var(--ff-sans);font-size:.78rem;font-weight:700;letter-spacing:.04em;color:var(--text)}
+#mob-overlay{position:fixed;inset:0;z-index:1050;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .25s}
+#mob-overlay.active{opacity:1;pointer-events:all}
+
+/* RESPONSIVE */
+@media(max-width:960px){
+  #mob-bar{display:flex}
+  #side-nav{left:calc(-1 * var(--side-w) - 20px);top:52px;height:calc(100vh - 52px);transition:left .3s cubic-bezier(.4,0,.2,1);z-index:1080;display:flex!important}
+  #side-nav.mob-open{left:0;box-shadow:8px 0 32px rgba(0,0,0,.25)}
+  #main{margin-left:0;margin-top:52px}
+  #sprog{left:0;top:52px}
+  .hero-visual-band{height:220px}
+  .meta-row{grid-template-columns:1fr 1fr;row-gap:24px}
+  .sec-wrap,#proj-nav{padding:48px 24px}
+  .hero-text-band{padding:48px 24px}
+  .slot-row3{grid-template-columns:1fr}
+  .slot-row3 .slot{min-height:180px}
+  .proj-nav-grid{grid-template-columns:1fr!important}
+}
+@media(max-width:600px){
+  .hero-text-band{padding:28px 16px}
+  .sec-wrap,#proj-nav{padding:32px 16px}
+  .meta-row{grid-template-columns:1fr}
+  .slot-row{grid-template-columns:1fr}
+  .slot-row .slot{min-height:180px}
+  .hero-tags{gap:6px}
+  #fab{bottom:16px;right:16px}
+}
+@media(max-width:480px){
+  .hero-text-band,.sec-wrap{padding:20px 14px}
+  .meta-row{gap:10px}
+}
+
+/* LIGHTBOX */
+#img-modal{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s ease;cursor:zoom-out}
+#img-modal.open{opacity:1;pointer-events:all}
+#img-modal img{max-width:90vw;max-height:90vh;width:auto;height:auto;transform:scale(.97);transition:transform .3s ease;display:block}
+#img-modal.open img{transform:scale(1)}
+</style>
+</head>
+<body class="light">
+<div id="cur"></div><div id="cur-r"></div>
+<div id="sprog"></div>
+
+<!-- MOBILE BAR -->
+<div id="mob-bar">
+  <button id="mob-bar-btn" aria-label="Open menu">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <span class="mob-bar-title">Brian Higgins</span>
+  <button id="mob-theme-bar" aria-label="Toggle theme">
+    <svg id="mob-icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    <svg id="mob-icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
+</div>
+<div id="mob-overlay"></div>
+
+<!-- SIDE NAV -->
+<nav id="side-nav">
+  <div class="sn-name">Brian<br/>Higgins</div>
+  <a href="index.html?skip=1" class="sn-back">
+    <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L2 5l4 3"/></svg>
+    Home
+  </a>
+  <div class="sn-links">
+    <a href="#hero" class="sn-a active">Overview</a>
+    <a href="#users" class="sn-a">Users</a>
+    <a href="#product" class="sn-a">The Product</a>
+    <a href="#approach" class="sn-a">Design Approach</a>
+  </div>
+</nav>
+
+<div id="main">
+
+  <!-- ═══ HERO ═══ -->
+  <section id="hero">
+    <div class="hero-visual-band">
+      <img src="case3images/hero.png" alt="" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block;">
+    </div>
+    <div class="hero-text-band">
+      <div class="hero-badge" data-r>
+        <span style="font-family:var(--ff-mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim)">AMCS Platform</span>
+      </div>
+      <h1 class="hero-h1" data-r data-d="1">
+        <strong>The Vendor Management Workcenter</strong><br>
+        <span class="lo" style="display:block">A new workcenter for managing subcontractors on the AMCS Platform</span>
+      </h1>
+      <div class="hero-tags" data-r data-d="2">
+        <span class="hero-tag">Enterprise</span>
+        <span class="hero-tag">New Product</span>
+        <span class="hero-tag">Design System</span>
+        <span class="hero-tag">ERP</span>
+      </div>
+      <div class="meta-row" style="margin-top:48px" data-r data-d="3">
+        <div class="mc">
+          <div class="mc-label">Role</div>
+          <div class="mc-val">Lead UX Designer</div>
+        </div>
+        <div class="mc">
+          <div class="mc-label">Platform</div>
+          <div class="mc-val">AMCS Platform</div>
+        </div>
+        <div class="mc">
+          <div class="mc-label">Type</div>
+          <div class="mc-val">Enterprise, New Product</div>
+        </div>
+        <div class="mc">
+          <div class="mc-label">Tools</div>
+          <div class="mc-val">Figma, Userlytics</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ OVERVIEW ═══ -->
+  <section id="overview" class="sec-wrap" style="background:var(--bg2);border-top:1px solid var(--border)">
+    <div class="sec-inner">
+      <div class="sec-h" data-r>Overview</div>
+      <div class="sec-body" data-r>
+        <p>Operators using the AMCS Platform had no dedicated place to manage their subcontractors. Vendor relationships, compliance documents, job oversight, and billing all existed in separate places or not at all. The Vendor Management Workcenter brought all of it into one place.</p>
+        <p>This wasn't a redesign. It was a net new product built within the constraints of the platform design system, following established UX principles to ensure consistency across the many workcenters operators already work in daily.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ USERS ═══ -->
+  <section id="users" class="sec-wrap">
+    <div class="sec-inner">
+      <div class="sec-h" data-r>The Users</div>
+      <div class="sec-body" data-r>
+        <p>Three distinct roles use this workcenter for different purposes.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;" data-r>
+        <div class="def-card">
+          <div class="def-card-n">Vendor Managers</div>
+          <div class="def-card-h">Dashboard &amp; Compliance</div>
+          <div class="def-card-body">Use the dashboard daily to monitor performance across all subcontractors, spot compliance issues before they block new work, and get a quick read on which vendors are reliable.</div>
+        </div>
+        <div class="def-card" data-d="1">
+          <div class="def-card-n">Operations Managers</div>
+          <div class="def-card-h">Jobs &amp; Oversight</div>
+          <div class="def-card-body">Live on the jobs screen, tracking what's been accepted, rejected, and completed across their vendor network throughout the day.</div>
+        </div>
+        <div class="def-card" data-d="2">
+          <div class="def-card-n">Accountants</div>
+          <div class="def-card-h">Billing &amp; Transactions</div>
+          <div class="def-card-body">Work in the billing section, pulling together completed job transactions and matching them into bills for specific vendors rather than dealing with one unstructured lump sum.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ THE PRODUCT ═══ -->
+  <section id="product" class="sec-wrap" style="background:var(--bg2);border-top:1px solid var(--border)">
+    <div class="sec-inner">
+      <div class="sec-h" data-r>The Product</div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dec-section" data-r>
+      <div class="dec-h">Dashboard</div>
+      <div class="dec-body">
+        <p>The entry point gives an immediate read on vendor health. Performance bars show each vendor's completed versus rejected job ratio. A rating score is calculated automatically based on job acceptance, completion and rejection rates combined with compliance status. Operators told us this was immediately useful for deciding who to trust with new work.</p>
+      </div>
+      <img src="case3images/dashboard.png" alt="Dashboard" style="width:100%;border-radius:12px;display:block;margin:24px 0;">
+    </div>
+
+    <!-- Vendors -->
+    <div class="dec-section" data-r>
+      <div class="dec-h">Vendors</div>
+      <div class="dec-body">
+        <p>A table of all vendors with compliance status and ongoing job counts at a glance. Colour-coded compliance badges make non-compliant and expiring vendors immediately visible without drilling in.</p>
+      </div>
+      <img src="case3images/vendors.png" alt="Vendors List" style="width:100%;border-radius:12px;display:block;margin:24px 0;">
+      <div class="dec-body">
+        <p>Clicking a vendor opens their profile. The left panel holds their details. Tabs on the right show their sites, compliance documents and jobs. The compliance tab shows each document with its status approved, expiring, awaiting approval, no document uploaded, or expired. Operators can approve documents directly from here after the vendor uploads them on their side.</p>
+      </div>
+      <div class="slot-row">
+        <img src="case3images/vendorcompliance.png" alt="Vendor Compliance" style="width:100%;border-radius:12px;display:block;">
+        <img src="case3images/vendorjob.png" alt="Vendor Jobs" style="width:100%;border-radius:12px;display:block;">
+      </div>
+      <img src="case3images/vendorsites.png" alt="Vendor Sites" style="width:100%;border-radius:12px;display:block;margin:16px 0;">
+    </div>
+
+    <!-- Jobs -->
+    <div class="dec-section" data-r>
+      <div class="dec-h">Jobs</div>
+      <div class="dec-body">
+        <p>A full table of jobs across all vendors with KPI cards at the top showing due today, due tomorrow, this week, overdue, flagged, and assigned to me. Operators can filter and drill into individual jobs without leaving the workcenter.</p>
+      </div>
+      <img src="case3images/Jobs.png" alt="Jobs" style="width:100%;border-radius:12px;display:block;margin:24px 0;">
+    </div>
+
+    <!-- Billing -->
+    <div class="dec-section" data-r>
+      <div class="dec-h">Billing</div>
+      <div class="dec-body">
+        <p>Completed jobs become transactions. Accountants can filter and select specific transactions to bundle into a bill rather than creating a single bill for everything. A bill matching flow shows the before and after impact of matching transactions to an existing bill so accountants can review the adjustment before confirming.</p>
+      </div>
+      <div class="slot-row">
+        <img src="case3images/transactions.png" alt="Transactions" style="width:100%;border-radius:12px;display:block;">
+        <img src="case3images/bills.png" alt="Bills" style="width:100%;border-radius:12px;display:block;">
+      </div>
+      <img src="case3images/transactiontobill.png" alt="Transaction to Bill" style="width:100%;border-radius:12px;display:block;margin:16px 0;">
+    </div>
+
+    <!-- Compliance Templates -->
+    <div class="dec-section" data-r>
+      <div class="dec-h">Compliance Templates</div>
+      <div class="dec-body">
+        <p>Templates allow operators to define a set of required compliance documents and assign them to vendors in bulk. The two-panel layout keeps the template list on the left and the document and vendor selection on the right, reducing the steps needed to set up compliance requirements across a large vendor network.</p>
+      </div>
+      <img src="case3images/compliance.png" alt="Compliance Templates" style="width:100%;border-radius:12px;display:block;margin:24px 0;">
+    </div>
+
+  </section>
+
+  <!-- ═══ DESIGN APPROACH ═══ -->
+  <section id="approach" class="sec-wrap">
+    <div class="sec-inner">
+      <div class="sec-h" data-r>Design Approach</div>
+      <div class="sec-body" data-r>
+        <p>This workcenter was designed entirely within the AMCS Platform design system. No new patterns were introduced. Consistency was the priority operators move between multiple workcenters in a single session and the experience needs to feel like one product throughout.</p>
+        <p>Designs were validated through biweekly calls with one operator customer who reviewed progress and gave feedback on each section. The compliance template builder went through the most iteration, moving from a multi-screen flow to a single split-panel view that let operators see both their template list and the configuration at the same time.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ PROJECT NAV ═══ -->
+  <div id="proj-nav">
+    <div class="proj-nav-lbl">All work</div>
+    <div class="proj-nav-grid">
+      <a href="case-01.html" class="proj-card">
+        <div class="proj-card-n">Project 01</div>
+        <div class="proj-card-h">AI-Driven Customer Hub</div>
+        <div class="proj-card-sub">From Static Portal to Intelligent Assistant</div>
+      </a>
+      <a href="case-02.html" class="proj-card">
+        <div class="proj-card-n">Project 02</div>
+        <div class="proj-card-h">AMCS Next Gen Mobile</div>
+        <div class="proj-card-sub">Rethinking Route Navigation While on the Road</div>
+      </a>
+      <a href="case-03.html" class="proj-card act">
+        <div class="proj-card-n act">Project 03</div>
+        <div class="proj-card-h">The Vendor Management Workcenter</div>
+        <div class="proj-card-sub">A new workcenter for managing subcontractors on the AMCS Platform</div>
+      </a>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- FAB -->
+<div id="fab">
+  <button class="fab-btn" id="theme-toggle" title="Toggle theme">
+    <svg id="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    <svg id="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
+  <button class="fab-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">↑</button>
+</div>
+
+<script>
+const cur=document.getElementById('cur'),curR=document.getElementById('cur-r');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px';});
+document.querySelectorAll('a,button').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('hov'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('hov'));
+});
+(function tick(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;curR.style.left=rx+'px';curR.style.top=ry+'px';requestAnimationFrame(tick);})();
+
+const sprog=document.getElementById('sprog');
+window.addEventListener('scroll',()=>{
+  sprog.style.transform=`scaleX(${window.scrollY/(document.documentElement.scrollHeight-window.innerHeight)})`;
+},{passive:true});
+
+const ro=new IntersectionObserver(e=>e.forEach(i=>{if(i.isIntersecting){i.target.classList.add('in');ro.unobserve(i.target);}}),{threshold:0.08});
+document.querySelectorAll('[data-r]').forEach(el=>ro.observe(el));
+
+const navLinks=document.querySelectorAll('.sn-a');
+const no=new IntersectionObserver(e=>e.forEach(i=>{
+  if(i.isIntersecting)navLinks.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+i.target.id));
+}),{rootMargin:'-40% 0px -40% 0px'});
+document.querySelectorAll('section[id]').forEach(s=>no.observe(s));
+
+const tb=document.getElementById('theme-toggle');
+const iconSun=document.getElementById('icon-sun');
+const iconMoon=document.getElementById('icon-moon');
+const mobIconSun=document.getElementById('mob-icon-sun');
+const mobIconMoon=document.getElementById('mob-icon-moon');
+function applyTheme(light){
+  document.body.classList.toggle('light',light);
+  if(iconSun) iconSun.style.display=light?'':'none';
+  if(iconMoon) iconMoon.style.display=light?'none':'';
+  if(mobIconSun) mobIconSun.style.display=light?'':'none';
+  if(mobIconMoon) mobIconMoon.style.display=light?'none':'';
+}
+applyTheme(true);
+tb.addEventListener('click',()=>{const isLight=document.body.classList.contains('light');applyTheme(!isLight);localStorage.setItem('bh-theme',!isLight?'light':'dark');});
+var mobThemeBar=document.getElementById('mob-theme-bar');
+if(mobThemeBar) mobThemeBar.addEventListener('click',()=>{const isLight=document.body.classList.contains('light');applyTheme(!isLight);localStorage.setItem('bh-theme',!isLight?'light':'dark');});
+
+/* Mobile nav toggle */
+(function(){
+  var ham=document.getElementById('mob-bar-btn');
+  var nav=document.getElementById('side-nav');
+  var overlay=document.getElementById('mob-overlay');
+  function openNav(){nav.classList.add('mob-open');overlay.classList.add('active');document.body.style.overflow='hidden';}
+  function closeNav(){nav.classList.remove('mob-open');overlay.classList.remove('active');document.body.style.overflow='';}
+  if(ham) ham.addEventListener('click',openNav);
+  if(overlay) overlay.addEventListener('click',closeNav);
+  document.querySelectorAll('#side-nav .sn-a, #side-nav .sn-back').forEach(function(a){a.addEventListener('click',closeNav);});
+})();
+
+(function(){
+  var modal=document.createElement('div');modal.id='img-modal';
+  var mImg=document.createElement('img');modal.appendChild(mImg);
+  document.body.appendChild(modal);
+  document.querySelectorAll('#main img').forEach(function(img){
+    img.style.cursor='zoom-in';
+    img.addEventListener('click',function(e){
+      e.stopPropagation();
+      mImg.src=img.src;mImg.alt=img.alt;
+      modal.classList.add('open');
+    });
+  });
+  modal.addEventListener('click',function(){modal.classList.remove('open');});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')modal.classList.remove('open');});
+})();
+</script>
+</body>
+</html>
